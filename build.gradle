@@ -1,0 +1,145 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath "net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT"
+    }
+}
+
+apply plugin: "forge"
+
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    ext.config = new ConfigSlurper().parse prop
+}
+
+ext.build = System.getenv().BUILD_NUMBER ?: "dev"
+ext.modversion = "${config.version.major}.${config.version.minor}.${config.version.micro}.${build}"
+
+group = "com.github.lunatrius"
+version = "${config.version.minecraft}-${modversion}"
+archivesBaseName = config.mod.id
+
+repositories {
+    ivy {
+        name = "lunatrius' ivy repo"
+        url "http://mc.lunatri.us/files"
+    }
+}
+
+dependencies {
+    compile group: group, name: "LunatriusCore", version: "${config.version.minecraft}-${config.version.lunatriuscore}", classifier: "deobf"
+}
+
+idea {
+    module {
+        downloadSources = true
+    }
+}
+
+minecraft {
+    version = "${config.version.minecraft}-${config.version.forge}"
+
+    if (!project.hasProperty("run_location"))
+        assetDir = "run/assets"
+    else
+        assetDir = run_location.replace("{modid}", config.mod.id).replace("{mcversion}", config.version.minecraft) + "assets"
+}
+
+jar {
+    classifier = "universal"
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from (sourceSets.main.resources.srcDirs) {
+        include "mcmod.info"
+        include "version.properties"
+
+        expand (["modid": config.mod.id,
+            "version": modversion,
+            "mcversion": config.version.minecraft,
+            "forgeversion": config.version.forge,
+            "coreversion": config.version.lunatriuscore
+        ])
+    }
+
+    from (sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
+        exclude "version.properties"
+    }
+}
+
+if (!project.hasProperty("keystore_location"))
+    ext.keystore_location = "."
+
+if (!project.hasProperty("keystore_alias"))
+    ext.keystore_alias = ""
+
+if (!project.hasProperty("keystore_password"))
+    ext.keystore_password = ""
+
+if (!project.hasProperty("release_location"))
+    ext.release_location = "."
+else
+    ext.release_location = release_location.replace("{modid}", config.mod.id).replace("{mcversion}", config.version.minecraft).replace("{version}", version)
+
+task signJar(dependsOn: "reobf") {
+    inputs.file jar.getArchivePath()
+    inputs.file keystore_location
+    inputs.property "keystore_alias", keystore_alias
+    inputs.property "keystore_password", keystore_password
+    outputs.file jar.getArchivePath()
+
+    onlyIf {
+        return keystore_location != "."
+    }
+
+    doLast {
+        ant.signjar(
+            destDir: jar.destinationDir,
+            jar: jar.getArchivePath(),
+            keystore: keystore_location,
+            alias: keystore_alias,
+            storepass: keystore_password
+        )
+    }
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = "deobf"
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = "sources"
+}
+
+task release(dependsOn: ["sourceJar", "deobfJar", "signJar"], type: Copy) {
+    from project.tasks.jar.destinationDir
+    into project.file(project.release_location)
+
+    eachFile { file ->
+        logger.info "copying ${file}"
+    }
+
+    onlyIf {
+        return project.release_location != "."
+    }
+}

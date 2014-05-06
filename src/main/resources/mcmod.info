@@ -1,0 +1,25 @@
+{
+	"modListVersion": 2,
+	"modList": [
+		{
+			"modid": "DynIMC",
+			"name": "DynIMC",
+			"description": "Send custom IMC messages loaded from config file(s)!",
+			"mcversion": "${mcversion}",
+			"version": "${version}",
+			"authorList": [
+				"Lunatrius"
+			],
+			"credits": "Darkhax",
+			"dependants": [  ],
+			"dependencies": [ "LunatriusCore@[${coreversion},)" ],
+			"parent": "",
+			"requiredMods": [  ],
+			"logoFile": "",
+			"screenshots": [  ],
+			"updateUrl": "http://mc.lunatri.us/",
+			"url": "http://mc.lunatri.us/",
+			"useDependencyInformation": true
+		}
+	]
+}
