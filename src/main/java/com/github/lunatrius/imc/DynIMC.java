@@ -9,6 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -34,10 +35,13 @@ public class DynIMC {
 	@Instance(Reference.MODID)
 	public static DynIMC instance;
 
+	public ModMetadata modMetadata;
 	private Gson gson;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		this.modMetadata = event.getModMetadata();
+
 		Reference.logger = event.getModLog();
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
