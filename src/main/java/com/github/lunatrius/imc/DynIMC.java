@@ -18,11 +18,19 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Map;
 
 @Mod(modid = Reference.MODID, name = Reference.NAME)
 public class DynIMC {
+	public static final FilenameFilter IMC_JSON_FILTER = new FilenameFilter() {
+		@Override
+		public boolean accept(File dir, String name) {
+			return name.endsWith(".json");
+		}
+	};
+
 	@Instance(Reference.MODID)
 	public static DynIMC instance;
 
@@ -37,29 +45,39 @@ public class DynIMC {
 		gsonBuilder.registerTypeAdapter(NBTTagCompound.class, new NBTTagCompoundDeserializer());
 		this.gson = gsonBuilder.create();
 
-		ModIMC modIMC = readFile(event.getSuggestedConfigurationFile());
+		File cfgDirectory = new File(event.getModConfigurationDirectory(), Reference.MODID.toLowerCase());
+		if (!cfgDirectory.exists()) {
+			if (!cfgDirectory.mkdirs()) {
+				Reference.logger.error("Could not create directory!");
+			}
+		}
 
-		if (modIMC != null) {
-			if (modIMC.stringItemStackMap != null) {
-				for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
-					for (ItemStack itemStack : entry.getValue()) {
-						FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+		File[] files = cfgDirectory.listFiles(IMC_JSON_FILTER);
+		for (File file : files) {
+			ModIMC modIMC = readFile(file);
+
+			if (modIMC != null) {
+				if (modIMC.stringItemStackMap != null) {
+					for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
+						for (ItemStack itemStack : entry.getValue()) {
+							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+						}
 					}
 				}
-			}
 
-			if (modIMC.stringStringMap != null) {
-				for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
-					for (String string : entry.getValue()) {
-						FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
+				if (modIMC.stringStringMap != null) {
+					for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
+						for (String string : entry.getValue()) {
+							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
+						}
 					}
 				}
-			}
 
-			if (modIMC.stringNBTTagCompoundMap != null) {
-				for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
-					for (NBTTagCompound nbt : entry.getValue()) {
-						FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
+				if (modIMC.stringNBTTagCompoundMap != null) {
+					for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
+						for (NBTTagCompound nbt : entry.getValue()) {
+							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
+						}
 					}
 				}
 			}
