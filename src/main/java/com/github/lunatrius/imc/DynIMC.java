@@ -1,6 +1,7 @@
 package com.github.lunatrius.imc;
 
 import com.github.lunatrius.imc.deserializer.ItemStackDeserializer;
+import com.github.lunatrius.imc.deserializer.NBTTagCompoundDeserializer;
 import com.github.lunatrius.imc.lib.Reference;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -33,6 +34,7 @@ public class DynIMC {
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.registerTypeAdapter(ItemStack.class, new ItemStackDeserializer());
+		gsonBuilder.registerTypeAdapter(NBTTagCompound.class, new NBTTagCompoundDeserializer());
 		this.gson = gsonBuilder.create();
 
 		ModIMC modIMC = readFile(event.getSuggestedConfigurationFile());
