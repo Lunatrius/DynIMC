@@ -6,6 +6,7 @@ import com.github.lunatrius.imc.lib.Reference;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -21,6 +22,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Mod(modid = Reference.MODID, name = Reference.NAME)
@@ -58,37 +61,37 @@ public class DynIMC {
 
 		File[] files = cfgDirectory.listFiles(IMC_JSON_FILTER);
 		for (File file : files) {
-			ModIMC modIMC = readFile(file);
+			List<ModIMC> modIMCs = readFile(file);
+			for (ModIMC modIMC : modIMCs)
+				if (modIMC != null) {
+					if (modIMC.stringItemStackMap != null) {
+						for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
+							for (ItemStack itemStack : entry.getValue()) {
+								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+							}
+						}
+					}
 
-			if (modIMC != null) {
-				if (modIMC.stringItemStackMap != null) {
-					for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
-						for (ItemStack itemStack : entry.getValue()) {
-							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+					if (modIMC.stringStringMap != null) {
+						for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
+							for (String string : entry.getValue()) {
+								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
+							}
+						}
+					}
+
+					if (modIMC.stringNBTTagCompoundMap != null) {
+						for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
+							for (NBTTagCompound nbt : entry.getValue()) {
+								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
+							}
 						}
 					}
 				}
-
-				if (modIMC.stringStringMap != null) {
-					for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
-						for (String string : entry.getValue()) {
-							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
-						}
-					}
-				}
-
-				if (modIMC.stringNBTTagCompoundMap != null) {
-					for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
-						for (NBTTagCompound nbt : entry.getValue()) {
-							FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
-						}
-					}
-				}
-			}
 		}
 	}
 
-	private ModIMC readFile(File file) {
+	private List<ModIMC> readFile(File file) {
 		BufferedReader buffer = null;
 		try {
 			if (file.getParentFile() != null) {
@@ -112,7 +115,7 @@ public class DynIMC {
 					str += line + "\n";
 				}
 
-				return this.gson.fromJson(str, ModIMC.class);
+				return this.gson.fromJson(str, new TypeToken<ArrayList<ModIMC>>() {}.getType());
 			}
 		} catch (IOException e) {
 			Reference.logger.error("IO failure!", e);
