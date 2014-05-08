@@ -61,6 +61,11 @@ public class DynIMC {
 		File[] files = cfgDirectory.listFiles(IMC_JSON_FILTER);
 		for (File file : files) {
 			List<ModIMC> modIMCs = readFile(file);
+
+			if (modIMCs == null) {
+				continue;
+			}
+
 			for (ModIMC modIMC : modIMCs)
 				if (modIMC != null) {
 					if (modIMC.stringItemStackMap != null) {
