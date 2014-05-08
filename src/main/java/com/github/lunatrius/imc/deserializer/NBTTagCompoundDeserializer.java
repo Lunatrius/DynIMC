@@ -6,6 +6,8 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -25,6 +27,9 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
 	public static final String MEMBER_NAME = "name";
 	public static final String MEMBER_VALUE = "value";
 	public static final String DELIMITER = ":";
+
+	public static final String ID_TYPE_BLOCK = "block";
+	public static final String ID_TYPE_ITEM = "item";
 
 	public static final String TYPE_BOOLEAN = "boolean";
 	public static final String TYPE_BYTE = "byte";
@@ -58,8 +63,20 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
 		} else if (type.equalsIgnoreCase(TYPE_BYTE)) {
 			return new NBTTagByte(value.getAsByte());
 		} else if (type.equalsIgnoreCase(TYPE_SHORT)) {
+			NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
+
+			if (primitive != null) {
+				return primitive;
+			}
+
 			return new NBTTagShort(value.getAsShort());
 		} else if (type.equalsIgnoreCase(TYPE_INT)) {
+			NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
+
+			if (primitive != null) {
+				return primitive;
+			}
+
 			return new NBTTagInt(value.getAsInt());
 		} else if (type.equalsIgnoreCase(TYPE_LONG)) {
 			return new NBTTagLong(value.getAsLong());
@@ -77,6 +94,41 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
 			return getCompound(value.getAsJsonArray());
 		} else if (type.equalsIgnoreCase(TYPE_INT_ARRAY)) {
 			return getIntArray(value.getAsJsonArray());
+		}
+
+		return null;
+	}
+
+	private NBTBase.NBTPrimitive getIdFromString(JsonElement jsonElement, String type) {
+		if (jsonElement.isJsonPrimitive()) {
+			JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
+
+			if (jsonPrimitive.isString()) {
+				String[] split = jsonPrimitive.getAsString().split(DELIMITER, 2);
+				int id = -1;
+
+				if (split.length == 2) {
+					if (split[0].equalsIgnoreCase(ID_TYPE_BLOCK)) {
+						id = GameData.getBlockRegistry().getId(split[1]);
+					} else if (split[0].equalsIgnoreCase(ID_TYPE_ITEM)) {
+						id = GameData.getItemRegistry().getId(split[1]);
+					}
+				} else {
+					id = GameData.getBlockRegistry().getId(split[1]);
+
+					if (id == -1) {
+						id = GameData.getItemRegistry().getId(split[1]);
+					}
+				}
+
+				if (id >= 0) {
+					if (type.equalsIgnoreCase(TYPE_SHORT)) {
+						return new NBTTagShort((short) id);
+					} else if (type.equalsIgnoreCase(TYPE_INT)) {
+						return new NBTTagInt(id);
+					}
+				}
+			}
 		}
 
 		return null;
