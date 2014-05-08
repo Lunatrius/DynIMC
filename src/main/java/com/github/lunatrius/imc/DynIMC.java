@@ -12,7 +12,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLInterModComms;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -132,27 +131,5 @@ public class DynIMC {
 		}
 
 		return null;
-	}
-
-	// TODO: remove when done testing
-	@Deprecated
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		// System.exit(9001);
-	}
-
-	// TODO: remove when done testing
-	@Deprecated
-	@EventHandler
-	public void imcCallback(FMLInterModComms.IMCEvent event) {
-		for (final FMLInterModComms.IMCMessage imcMessage : event.getMessages()) {
-			if (imcMessage.isStringMessage()) {
-				Reference.logger.info(imcMessage.getSender() + " sent (string): " + imcMessage.key + " => " + imcMessage.getStringValue());
-			} else if (imcMessage.isItemStackMessage()) {
-				Reference.logger.info(imcMessage.getSender() + " sent (itemstack): " + imcMessage.key + " => " + imcMessage.getItemStackValue());
-			} else if (imcMessage.isNBTMessage()) {
-				Reference.logger.info(imcMessage.getSender() + " sent (nbt): " + imcMessage.key + " => " + imcMessage.getNBTValue());
-			}
-		}
 	}
 }
