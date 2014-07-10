@@ -1,5 +1,6 @@
 package com.github.lunatrius.imc;
 
+import com.github.lunatrius.core.version.VersionChecker;
 import com.github.lunatrius.imc.deserializer.ItemStackDeserializer;
 import com.github.lunatrius.imc.deserializer.NBTTagCompoundDeserializer;
 import com.github.lunatrius.imc.lib.Reference;
@@ -7,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -37,12 +39,13 @@ public class DynIMC {
 	@Instance(Reference.MODID)
 	public static DynIMC instance;
 
-	public ModMetadata modMetadata;
 	private Gson gson;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		this.modMetadata = event.getModMetadata();
+		if (Loader.isModLoaded("LunatriusCore")) {
+			registerVersionChecker(event.getModMetadata());
+		}
 
 		Reference.logger = event.getModLog();
 
@@ -93,6 +96,10 @@ public class DynIMC {
 					}
 				}
 		}
+	}
+
+	private void registerVersionChecker(ModMetadata modMetadata) {
+		VersionChecker.registerMod(modMetadata);
 	}
 
 	private List<ModIMC> readFile(File file) {
