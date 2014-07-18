@@ -99,7 +99,7 @@ public class DynIMC {
 	}
 
 	private void registerVersionChecker(ModMetadata modMetadata) {
-		VersionChecker.registerMod(modMetadata);
+		VersionChecker.registerMod(modMetadata, Reference.FORGE);
 	}
 
 	private List<ModIMC> readFile(File file) {
