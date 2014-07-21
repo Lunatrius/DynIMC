@@ -48,13 +48,16 @@ public class DynIMC {
 		}
 
 		Reference.logger = event.getModLog();
+		readConfiguration(event.getModConfigurationDirectory());
+	}
 
+	private void readConfiguration(File configurationDirectory) {
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.registerTypeAdapter(ItemStack.class, new ItemStackDeserializer());
 		gsonBuilder.registerTypeAdapter(NBTTagCompound.class, new NBTTagCompoundDeserializer());
 		this.gson = gsonBuilder.create();
 
-		File cfgDirectory = new File(event.getModConfigurationDirectory(), Reference.MODID.toLowerCase());
+		File cfgDirectory = new File(configurationDirectory, Reference.MODID.toLowerCase());
 		if (!cfgDirectory.exists()) {
 			if (!cfgDirectory.mkdirs()) {
 				Reference.logger.error("Could not create directory!");
@@ -69,7 +72,7 @@ public class DynIMC {
 				continue;
 			}
 
-			for (ModIMC modIMC : modIMCs)
+			for (ModIMC modIMC : modIMCs) {
 				if (modIMC != null) {
 					if (modIMC.stringItemStackMap != null) {
 						for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
@@ -95,6 +98,7 @@ public class DynIMC {
 						}
 					}
 				}
+			}
 		}
 	}
 
