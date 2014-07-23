@@ -3,7 +3,7 @@ package com.github.lunatrius.imc;
 import com.github.lunatrius.core.version.VersionChecker;
 import com.github.lunatrius.imc.deserializer.ItemStackDeserializer;
 import com.github.lunatrius.imc.deserializer.NBTTagCompoundDeserializer;
-import com.github.lunatrius.imc.lib.Reference;
+import com.github.lunatrius.imc.reference.Reference;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Mod(modid = Reference.MODID, name = Reference.NAME)
+@Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION)
 public class DynIMC {
 	public static final FilenameFilter IMC_JSON_FILTER = new FilenameFilter() {
 		@Override
