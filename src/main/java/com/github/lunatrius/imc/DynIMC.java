@@ -29,123 +29,123 @@ import java.util.Map;
 
 @Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION)
 public class DynIMC {
-	public static final FilenameFilter IMC_JSON_FILTER = new FilenameFilter() {
-		@Override
-		public boolean accept(File dir, String name) {
-			return name.endsWith(".json");
-		}
-	};
+    public static final FilenameFilter IMC_JSON_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".json");
+        }
+    };
 
-	@Instance(Reference.MODID)
-	public static DynIMC instance;
+    @Instance(Reference.MODID)
+    public static DynIMC instance;
 
-	private Gson gson;
+    private Gson gson;
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		Reference.logger = event.getModLog();
-		readConfiguration(event.getModConfigurationDirectory());
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        Reference.logger = event.getModLog();
+        readConfiguration(event.getModConfigurationDirectory());
 
-		if (Loader.isModLoaded("LunatriusCore")) {
-			registerVersionChecker(event.getModMetadata());
-		}
-	}
+        if (Loader.isModLoaded("LunatriusCore")) {
+            registerVersionChecker(event.getModMetadata());
+        }
+    }
 
-	private void readConfiguration(File configurationDirectory) {
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(ItemStack.class, new ItemStackDeserializer());
-		gsonBuilder.registerTypeAdapter(NBTTagCompound.class, new NBTTagCompoundDeserializer());
-		this.gson = gsonBuilder.create();
+    private void readConfiguration(File configurationDirectory) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(ItemStack.class, new ItemStackDeserializer());
+        gsonBuilder.registerTypeAdapter(NBTTagCompound.class, new NBTTagCompoundDeserializer());
+        this.gson = gsonBuilder.create();
 
-		File cfgDirectory = new File(configurationDirectory, Reference.MODID.toLowerCase());
-		if (!cfgDirectory.exists()) {
-			if (!cfgDirectory.mkdirs()) {
-				Reference.logger.error("Could not create directory!");
-			}
-		}
+        File cfgDirectory = new File(configurationDirectory, Reference.MODID.toLowerCase());
+        if (!cfgDirectory.exists()) {
+            if (!cfgDirectory.mkdirs()) {
+                Reference.logger.error("Could not create directory!");
+            }
+        }
 
-		File[] files = cfgDirectory.listFiles(IMC_JSON_FILTER);
-		for (File file : files) {
-			List<ModIMC> modIMCs = readFile(file);
+        File[] files = cfgDirectory.listFiles(IMC_JSON_FILTER);
+        for (File file : files) {
+            List<ModIMC> modIMCs = readFile(file);
 
-			if (modIMCs == null) {
-				continue;
-			}
+            if (modIMCs == null) {
+                continue;
+            }
 
-			for (ModIMC modIMC : modIMCs) {
-				if (modIMC != null) {
-					if (modIMC.stringItemStackMap != null) {
-						for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
-							for (ItemStack itemStack : entry.getValue()) {
-								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
-							}
-						}
-					}
+            for (ModIMC modIMC : modIMCs) {
+                if (modIMC != null) {
+                    if (modIMC.stringItemStackMap != null) {
+                        for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
+                            for (ItemStack itemStack : entry.getValue()) {
+                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+                            }
+                        }
+                    }
 
-					if (modIMC.stringStringMap != null) {
-						for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
-							for (String string : entry.getValue()) {
-								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
-							}
-						}
-					}
+                    if (modIMC.stringStringMap != null) {
+                        for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
+                            for (String string : entry.getValue()) {
+                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
+                            }
+                        }
+                    }
 
-					if (modIMC.stringNBTTagCompoundMap != null) {
-						for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
-							for (NBTTagCompound nbt : entry.getValue()) {
-								FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+                    if (modIMC.stringNBTTagCompoundMap != null) {
+                        for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
+                            for (NBTTagCompound nbt : entry.getValue()) {
+                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	private void registerVersionChecker(ModMetadata modMetadata) {
-		VersionChecker.registerMod(modMetadata, Reference.FORGE);
-	}
+    private void registerVersionChecker(ModMetadata modMetadata) {
+        VersionChecker.registerMod(modMetadata, Reference.FORGE);
+    }
 
-	private List<ModIMC> readFile(File file) {
-		BufferedReader buffer = null;
-		try {
-			if (file.getParentFile() != null) {
-				if (!file.getParentFile().mkdirs()) {
-					Reference.logger.debug("Could not create directory!");
-				}
-			}
+    private List<ModIMC> readFile(File file) {
+        BufferedReader buffer = null;
+        try {
+            if (file.getParentFile() != null) {
+                if (!file.getParentFile().mkdirs()) {
+                    Reference.logger.debug("Could not create directory!");
+                }
+            }
 
-			if (!file.exists() && !file.createNewFile()) {
-				return null;
-			}
+            if (!file.exists() && !file.createNewFile()) {
+                return null;
+            }
 
-			if (file.canRead()) {
-				FileReader fileInputStream = new FileReader(file);
-				buffer = new BufferedReader(fileInputStream);
+            if (file.canRead()) {
+                FileReader fileInputStream = new FileReader(file);
+                buffer = new BufferedReader(fileInputStream);
 
-				String str = "";
+                String str = "";
 
-				String line;
-				while ((line = buffer.readLine()) != null) {
-					str += line + "\n";
-				}
+                String line;
+                while ((line = buffer.readLine()) != null) {
+                    str += line + "\n";
+                }
 
-				return this.gson.fromJson(str, new TypeToken<ArrayList<ModIMC>>() {}.getType());
-			}
-		} catch (IOException e) {
-			Reference.logger.error("IO failure!", e);
-		} catch (JsonSyntaxException e) {
-			Reference.logger.error(String.format("Malformed JSON in %s!", file.getName()), e);
-		} finally {
-			if (buffer != null) {
-				try {
-					buffer.close();
-				} catch (IOException e) {
-					Reference.logger.error("IO failure!", e);
-				}
-			}
-		}
+                return this.gson.fromJson(str, new TypeToken<ArrayList<ModIMC>>() {}.getType());
+            }
+        } catch (IOException e) {
+            Reference.logger.error("IO failure!", e);
+        } catch (JsonSyntaxException e) {
+            Reference.logger.error(String.format("Malformed JSON in %s!", file.getName()), e);
+        } finally {
+            if (buffer != null) {
+                try {
+                    buffer.close();
+                } catch (IOException e) {
+                    Reference.logger.error("IO failure!", e);
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 }
