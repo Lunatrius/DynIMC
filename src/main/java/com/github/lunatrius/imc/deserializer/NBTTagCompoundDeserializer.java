@@ -122,10 +122,10 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                         id = GameData.getItemRegistry().getId(split[1]);
                     }
                 } else {
-                    id = GameData.getBlockRegistry().getId(split[1]);
+                    id = GameData.getBlockRegistry().getId(split[0]);
 
                     if (id == -1) {
-                        id = GameData.getItemRegistry().getId(split[1]);
+                        id = GameData.getItemRegistry().getId(split[0]);
                     }
                 }
 
