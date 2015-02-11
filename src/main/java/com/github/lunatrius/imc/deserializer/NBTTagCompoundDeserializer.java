@@ -69,6 +69,10 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
             if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
                 return new NBTTagByte((byte) (value.getAsBoolean() ? 1 : 0));
             } else if (type.equalsIgnoreCase(TYPE_BYTE)) {
+                final String str = value.getAsString();
+                if (str.startsWith("0x")) {
+                    return new NBTTagByte(Byte.parseByte(str.substring(2), 0x10));
+                }
                 return new NBTTagByte(value.getAsByte());
             } else if (type.equalsIgnoreCase(TYPE_SHORT)) {
                 NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
@@ -77,6 +81,10 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                     return primitive;
                 }
 
+                final String str = value.getAsString();
+                if (str.startsWith("0x")) {
+                    return new NBTTagShort(Short.parseShort(str.substring(2), 0x10));
+                }
                 return new NBTTagShort(value.getAsShort());
             } else if (type.equalsIgnoreCase(TYPE_INT)) {
                 NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
@@ -85,8 +93,16 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                     return primitive;
                 }
 
+                final String str = value.getAsString();
+                if (str.startsWith("0x")) {
+                    return new NBTTagInt(Integer.parseInt(str.substring(2), 0x10));
+                }
                 return new NBTTagInt(value.getAsInt());
             } else if (type.equalsIgnoreCase(TYPE_LONG)) {
+                final String str = value.getAsString();
+                if (str.startsWith("0x")) {
+                    return new NBTTagLong(Long.parseLong(str.substring(2), 0x10));
+                }
                 return new NBTTagLong(value.getAsLong());
             } else if (type.equalsIgnoreCase(TYPE_FLOAT)) {
                 return new NBTTagFloat(value.getAsFloat());
@@ -184,7 +200,9 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
         byte[] byteArray = new byte[jsonArray.size()];
 
         for (int i = 0; i < jsonArray.size(); i++) {
-            byteArray[i] = jsonArray.get(i).getAsByte();
+            final JsonElement element = jsonArray.get(i);
+            final String str = element.getAsString();
+            byteArray[i] = str.startsWith("0x") ? Byte.parseByte(str.substring(2), 0x10) : element.getAsByte();
         }
 
         return new NBTTagByteArray(byteArray);
@@ -194,7 +212,9 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
         int[] intArray = new int[jsonArray.size()];
 
         for (int i = 0; i < jsonArray.size(); i++) {
-            intArray[i] = jsonArray.get(i).getAsInt();
+            final JsonElement element = jsonArray.get(i);
+            final String str = element.getAsString();
+            intArray[i] = str.startsWith("0x") ? Integer.parseInt(str.substring(2), 0x10) : element.getAsInt();
         }
 
         return new NBTTagIntArray(intArray);
