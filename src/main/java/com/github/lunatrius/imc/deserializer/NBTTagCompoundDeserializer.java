@@ -25,7 +25,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompound> {
-    public static final String DELIMITER = ":";
+    public static final String DELIMITER = ";";
 
     public static final String ID_TYPE_BLOCK = "block";
     public static final String ID_TYPE_ITEM = "item";
