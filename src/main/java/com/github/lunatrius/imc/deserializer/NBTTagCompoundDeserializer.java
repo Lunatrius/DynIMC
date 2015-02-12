@@ -25,7 +25,8 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompound> {
-    public static final String DELIMITER = ";";
+    public static final String DELIMITER = ":";
+    public static final String DELIMITER_ITEM_BLOCK = ";";
 
     public static final String ID_TYPE_BLOCK = "block";
     public static final String ID_TYPE_ITEM = "item";
@@ -128,7 +129,7 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
             JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
 
             if (jsonPrimitive.isString()) {
-                String[] split = jsonPrimitive.getAsString().split(DELIMITER, 2);
+                String[] split = jsonPrimitive.getAsString().split(DELIMITER_ITEM_BLOCK, 2);
                 int id = -1;
 
                 if (split.length == 2) {

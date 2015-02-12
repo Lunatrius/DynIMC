@@ -72,12 +72,18 @@ public class DynIMC {
                 continue;
             }
 
+            Reference.logger.trace("Reading IMC messages from " + file.getName());
             for (ModIMC modIMC : modIMCs) {
                 if (modIMC != null) {
                     if (modIMC.stringItemStackMap != null) {
                         for (Map.Entry<String, ItemStack[]> entry : modIMC.stringItemStackMap.entrySet()) {
                             for (ItemStack itemStack : entry.getValue()) {
-                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
+                                if (itemStack != null && itemStack.getItem() != null) {
+                                    Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + itemStack);
+                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), itemStack);
+                                } else {
+                                    Reference.logger.warn("Tried to send null IMC message " + entry.getKey());
+                                }
                             }
                         }
                     }
@@ -85,7 +91,12 @@ public class DynIMC {
                     if (modIMC.stringStringMap != null) {
                         for (Map.Entry<String, String[]> entry : modIMC.stringStringMap.entrySet()) {
                             for (String string : entry.getValue()) {
-                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
+                                if (string != null) {
+                                    Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + string);
+                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), string);
+                                } else {
+                                    Reference.logger.warn("Tried to send null IMC message " + entry.getKey());
+                                }
                             }
                         }
                     }
@@ -93,7 +104,12 @@ public class DynIMC {
                     if (modIMC.stringNBTTagCompoundMap != null) {
                         for (Map.Entry<String, NBTTagCompound[]> entry : modIMC.stringNBTTagCompoundMap.entrySet()) {
                             for (NBTTagCompound nbt : entry.getValue()) {
-                                FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
+                                if (nbt != null) {
+                                    Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + String.valueOf(nbt));
+                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), nbt);
+                                } else {
+                                    Reference.logger.warn("Tried to send a null IMC message " + entry.getKey());
+                                }
                             }
                         }
                     }
