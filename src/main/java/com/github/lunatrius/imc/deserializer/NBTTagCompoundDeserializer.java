@@ -1,5 +1,6 @@
 package com.github.lunatrius.imc.deserializer;
 
+import com.github.lunatrius.imc.reference.Reference;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -129,7 +130,8 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
             JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
 
             if (jsonPrimitive.isString()) {
-                String[] split = jsonPrimitive.getAsString().split(DELIMITER_ITEM_BLOCK, 2);
+                final String name = jsonPrimitive.getAsString();
+                final String[] split = name.split(DELIMITER_ITEM_BLOCK, 2);
                 int id = -1;
 
                 if (split.length == 2) {
@@ -146,12 +148,14 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                     }
                 }
 
-                if (id >= 0) {
-                    if (type.equalsIgnoreCase(TYPE_SHORT)) {
-                        return new NBTTagShort((short) id);
-                    } else if (type.equalsIgnoreCase(TYPE_INT)) {
-                        return new NBTTagInt(id);
-                    }
+                if (id < 0) {
+                    Reference.logger.fatal(String.format("The block/item %s could not be found!", name));
+                }
+
+                if (type.equalsIgnoreCase(TYPE_SHORT)) {
+                    return new NBTTagShort((short) id);
+                } else if (type.equalsIgnoreCase(TYPE_INT)) {
+                    return new NBTTagInt(id);
                 }
             }
         }
