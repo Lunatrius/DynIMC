@@ -14,6 +14,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -40,14 +41,23 @@ public class DynIMC {
     public static DynIMC instance;
 
     private Gson gson;
+    private File directory;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         Reference.logger = event.getModLog();
+        this.directory = event.getModConfigurationDirectory();
         readConfiguration(event.getModConfigurationDirectory());
 
         if (Loader.isModLoaded("LunatriusCore")) {
             registerVersionChecker(event.getModMetadata());
+        }
+    }
+
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        if (this.directory != null) {
+            readConfiguration(this.directory);
         }
     }
 
