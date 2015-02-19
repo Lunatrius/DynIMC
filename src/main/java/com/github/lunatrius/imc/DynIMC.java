@@ -47,7 +47,6 @@ public class DynIMC {
     public void preInit(FMLPreInitializationEvent event) {
         Reference.logger = event.getModLog();
         this.directory = event.getModConfigurationDirectory();
-        readConfiguration(event.getModConfigurationDirectory());
 
         if (Loader.isModLoaded("LunatriusCore")) {
             registerVersionChecker(event.getModMetadata());
