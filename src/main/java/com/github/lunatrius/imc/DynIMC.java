@@ -8,14 +8,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.ModMetadata;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLInterModComms;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.DummyModContainer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -51,13 +52,15 @@ public class DynIMC {
         if (Loader.isModLoaded("LunatriusCore")) {
             registerVersionChecker(event.getModMetadata());
         }
+        
+        if (this.directory != null) {
+            readConfiguration(this.directory);
+        }
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        if (this.directory != null) {
-            readConfiguration(this.directory);
-        }
+    	
     }
 
     private void readConfiguration(File configurationDirectory) {
@@ -89,9 +92,9 @@ public class DynIMC {
                             for (ItemStack itemStack : entry.getValue()) {
                                 if (itemStack != null && itemStack.getItem() != null) {
                                     Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + itemStack);
-                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), itemStack);
+                                    FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), itemStack);
                                 } else {
-                                    Reference.logger.warn("Tried to send null IMC message " + entry.getKey());
+                                    Reference.logger.trace("Tried to send null IMC message " + entry.getKey());
                                 }
                             }
                         }
@@ -102,9 +105,9 @@ public class DynIMC {
                             for (String string : entry.getValue()) {
                                 if (string != null) {
                                     Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + string);
-                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), string);
+                                    FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), string);
                                 } else {
-                                    Reference.logger.warn("Tried to send null IMC message " + entry.getKey());
+                                    Reference.logger.trace("Tried to send null IMC message " + entry.getKey());
                                 }
                             }
                         }
@@ -115,9 +118,9 @@ public class DynIMC {
                             for (NBTTagCompound nbt : entry.getValue()) {
                                 if (nbt != null) {
                                     Reference.logger.trace("Sending IMC message " + entry.getKey() + ": " + String.valueOf(nbt));
-                                    FMLInterModComms.sendRuntimeMessage(Reference.MODID, modIMC.modid, entry.getKey(), nbt);
+                                    FMLInterModComms.sendMessage(modIMC.modid, entry.getKey(), nbt);
                                 } else {
-                                    Reference.logger.warn("Tried to send a null IMC message " + entry.getKey());
+                                    Reference.logger.trace("Tried to send a null IMC message " + entry.getKey());
                                 }
                             }
                         }
@@ -128,7 +131,8 @@ public class DynIMC {
     }
 
     private void registerVersionChecker(ModMetadata modMetadata) {
-        VersionChecker.registerMod(modMetadata, Reference.FORGE);
+    	DummyModContainer container = new DummyModContainer(modMetadata);
+    	VersionChecker.registerMod(container, Reference.FORGE);
     }
 
     private List<ModIMC> readFile(File file) {

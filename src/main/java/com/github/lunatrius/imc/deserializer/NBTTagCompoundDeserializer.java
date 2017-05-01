@@ -8,8 +8,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import cpw.mods.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,6 +22,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -77,24 +80,12 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                 }
                 return new NBTTagByte(value.getAsByte());
             } else if (type.equalsIgnoreCase(TYPE_SHORT)) {
-                NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
-
-                if (primitive != null) {
-                    return primitive;
-                }
-
                 final String str = value.getAsString();
                 if (str.startsWith("0x")) {
                     return new NBTTagShort(Short.parseShort(str.substring(2), 0x10));
                 }
                 return new NBTTagShort(value.getAsShort());
             } else if (type.equalsIgnoreCase(TYPE_INT)) {
-                NBTBase.NBTPrimitive primitive = getIdFromString(value, type);
-
-                if (primitive != null) {
-                    return primitive;
-                }
-
                 final String str = value.getAsString();
                 if (str.startsWith("0x")) {
                     return new NBTTagInt(Integer.parseInt(str.substring(2), 0x10));
@@ -122,44 +113,6 @@ public class NBTTagCompoundDeserializer implements JsonDeserializer<NBTTagCompou
                 return getIntArray(value.getAsJsonArray());
             }
         }
-        return null;
-    }
-
-    private NBTBase.NBTPrimitive getIdFromString(JsonElement jsonElement, String type) {
-        if (jsonElement.isJsonPrimitive()) {
-            JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
-
-            if (jsonPrimitive.isString()) {
-                final String name = jsonPrimitive.getAsString();
-                final String[] split = name.split(DELIMITER_ITEM_BLOCK, 2);
-                int id = -1;
-
-                if (split.length == 2) {
-                    if (split[0].equalsIgnoreCase(ID_TYPE_BLOCK)) {
-                        id = GameData.getBlockRegistry().getId(split[1]);
-                    } else if (split[0].equalsIgnoreCase(ID_TYPE_ITEM)) {
-                        id = GameData.getItemRegistry().getId(split[1]);
-                    }
-                } else {
-                    id = GameData.getBlockRegistry().getId(split[0]);
-
-                    if (id == -1) {
-                        id = GameData.getItemRegistry().getId(split[0]);
-                    }
-                }
-
-                if (id < 0) {
-                    Reference.logger.fatal(String.format("The block/item %s could not be found!", name));
-                }
-
-                if (type.equalsIgnoreCase(TYPE_SHORT)) {
-                    return new NBTTagShort((short) id);
-                } else if (type.equalsIgnoreCase(TYPE_INT)) {
-                    return new NBTTagInt(id);
-                }
-            }
-        }
-
         return null;
     }
 
