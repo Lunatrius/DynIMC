@@ -5,7 +5,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -33,10 +32,10 @@ public class ItemStackDeserializer implements JsonDeserializer<ItemStack> {
         int itemDamage = jsonObject.has(ITEM_DAMAGE) ? jsonObject.get(ITEM_DAMAGE).getAsInt() : DEFAULT_ITEM_DAMAGE;
 
         if (jsonObject.has(BLOCK)) {
-            Block block = GameData.getBlockRegistry().getObject(jsonObject.get(BLOCK).getAsString());
+            Block block = Block.getBlockFromName(jsonObject.get(BLOCK).getAsString());
             return new ItemStack(block, stackSize, itemDamage);
         } else if (jsonObject.has(ITEM)) {
-            Item item = GameData.getItemRegistry().getObject(jsonObject.get(ITEM).getAsString());
+            Item item = Item.getByNameOrId(jsonObject.get(BLOCK).getAsString());
             return new ItemStack(item, stackSize, itemDamage);
         }
 
